@@ -19,11 +19,11 @@ function AuthProvider({ children }) {
     // Check for token in local storage
     const token = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
-    
+
     if (token && storedUser) {
       setUser(JSON.parse(storedUser));
     }
-    
+
     setLoading(false);
   }, []);
 
@@ -33,7 +33,7 @@ function AuthProvider({ children }) {
       const formData = new FormData();
       formData.append("username", email);
       formData.append("password", password);
-      
+
       const response = await axios.post(
         `${API}/users/login`, 
         formData,
@@ -43,17 +43,17 @@ function AuthProvider({ children }) {
           }
         }
       );
-      
+
       const { access_token, user_id, name } = response.data;
-      
+
       // Store token and user info
       localStorage.setItem("token", access_token);
       const userData = { id: user_id, email, name };
       localStorage.setItem("user", JSON.stringify(userData));
-      
+
       // Set user in state
       setUser(userData);
-      
+
       return { success: true };
     } catch (error) {
       console.error("Login error:", error);
@@ -71,17 +71,17 @@ function AuthProvider({ children }) {
         password,
         name
       });
-      
+
       const { access_token, user_id } = response.data;
-      
+
       // Store token and user info
       localStorage.setItem("token", access_token);
       const userData = { id: user_id, email, name, isNewUser: true };
       localStorage.setItem("user", JSON.stringify(userData));
-      
+
       // Set user in state
       setUser({...userData, isNewUser: true});
-      
+
       return { success: true };
     } catch (error) {
       console.error("Registration error:", error);
@@ -108,11 +108,11 @@ function AuthProvider({ children }) {
 // Protected route component
 function ProtectedRoute({ children, requireOnboarding = true }) {
   const { user, loading } = React.useContext(AuthContext);
-  
+
   if (loading) {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;
   }
-  
+
   if (!user) {
     return <Navigate to="/login" replace />;
   }
@@ -121,7 +121,7 @@ function ProtectedRoute({ children, requireOnboarding = true }) {
   if (requireOnboarding && user.isNewUser && window.location.pathname !== '/onboarding') {
     return <Navigate to="/onboarding" replace />;
   }
-  
+
   return children;
 }
 
@@ -141,7 +141,7 @@ axios.interceptors.request.use(
 function NavBar() {
   const { user, logout } = React.useContext(AuthContext);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  
+
   return (
     <nav className="bg-gray-900 text-white shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -231,7 +231,7 @@ function NavBar() {
 
 function HomePage() {
   const { user } = React.useContext(AuthContext);
-  
+
   return (
     <div className="bg-gray-50 min-h-screen">
       <div className="hero bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-24 px-4">
@@ -247,10 +247,10 @@ function HomePage() {
           )}
         </div>
       </div>
-      
+
       <div className="max-w-6xl mx-auto py-16 px-4">
         <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
-        
+
         <div className="grid md:grid-cols-3 gap-8">
           <div className="bg-white p-6 rounded-lg shadow-md">
             <div className="text-blue-600 text-4xl mb-4">1</div>
@@ -259,7 +259,7 @@ function HomePage() {
               Choose your interests and expertise level to get AI news that's relevant to you.
             </p>
           </div>
-          
+
           <div className="bg-white p-6 rounded-lg shadow-md">
             <div className="text-blue-600 text-4xl mb-4">2</div>
             <h3 className="text-xl font-semibold mb-3">AI-Powered Summaries</h3>
@@ -267,7 +267,7 @@ function HomePage() {
               Our AI generates concise summaries of articles, saving you time while keeping you informed.
             </p>
           </div>
-          
+
           <div className="bg-white p-6 rounded-lg shadow-md">
             <div className="text-blue-600 text-4xl mb-4">3</div>
             <h3 className="text-xl font-semibold mb-3">Interactive Assistance</h3>
@@ -277,11 +277,11 @@ function HomePage() {
           </div>
         </div>
       </div>
-      
+
       <div className="bg-gray-100 py-16 px-4">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-center mb-12">Features</h2>
-          
+
           <div className="grid md:grid-cols-2 gap-12">
             <div className="flex">
               <div className="mr-4 text-blue-600">
@@ -296,7 +296,7 @@ function HomePage() {
                 </p>
               </div>
             </div>
-            
+
             <div className="flex">
               <div className="mr-4 text-blue-600">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -310,7 +310,7 @@ function HomePage() {
                 </p>
               </div>
             </div>
-            
+
             <div className="flex">
               <div className="mr-4 text-blue-600">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -324,7 +324,7 @@ function HomePage() {
                 </p>
               </div>
             </div>
-            
+
             <div className="flex">
               <div className="mr-4 text-blue-600">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -352,19 +352,19 @@ function LoginPage() {
   const [loading, setLoading] = useState(false);
   const { login, user } = React.useContext(AuthContext);
   const navigate = useNavigate();
-  
+
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
       navigate('/feed');
     }
   }, [user, navigate]);
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
-    
+
     try {
       const result = await login(email, password);
       if (result.success) {
@@ -379,7 +379,7 @@ function LoginPage() {
       setLoading(false);
     }
   };
-  
+
   return (
     <div className="min-h-[calc(100vh-64px)] flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -454,19 +454,19 @@ function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const { register, user } = React.useContext(AuthContext);
   const navigate = useNavigate();
-  
+
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
       navigate('/feed');
     }
   }, [user, navigate]);
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
-    
+
     try {
       const result = await register(email, password, name);
       if (result.success) {
@@ -481,7 +481,7 @@ function RegisterPage() {
       setLoading(false);
     }
   };
-  
+
   return (
     <div className="min-h-[calc(100vh-64px)] flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -572,7 +572,7 @@ function OnboardingPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  
+
   // Fetch available interests on load
   useEffect(() => {
     async function fetchInterests() {
@@ -586,10 +586,10 @@ function OnboardingPage() {
         setLoading(false);
       }
     }
-    
+
     fetchInterests();
   }, []);
-  
+
   const toggleInterest = (interestId) => {
     if (interests.includes(interestId)) {
       setInterests(interests.filter(id => id !== interestId));
@@ -597,21 +597,21 @@ function OnboardingPage() {
       setInterests([...interests, interestId]);
     }
   };
-  
+
   const handleNext = () => {
     if (step < 3) {
       setStep(step + 1);
     }
   };
-  
+
   const handleBack = () => {
     if (step > 1) {
       setStep(step - 1);
     }
   };
-  
+
   const { user } = React.useContext(AuthContext);
-  
+
   const handleSubmit = async () => {
     try {
       await axios.put(`${API}/users/preferences`, {
@@ -621,7 +621,7 @@ function OnboardingPage() {
         email_frequency: emailFrequency,
         slack_enabled: false
       });
-      
+
       // Update user in localStorage to indicate onboarding is complete
       if (user) {
         const updatedUser = { ...user, isNewUser: false };
@@ -630,14 +630,14 @@ function OnboardingPage() {
         localStorage.setItem("knowledgeLevel", knowledgeLevel);
         window.location.href = '/feed'; // Force a reload to update the user state
       }
-      
+
       navigate('/feed');
     } catch (err) {
       console.error("Error saving preferences:", err);
       setError("Could not save your preferences. Please try again.");
     }
   };
-  
+
   if (loading) {
     return (
       <div className="min-h-[calc(100vh-64px)] flex items-center justify-center">
@@ -645,7 +645,7 @@ function OnboardingPage() {
       </div>
     );
   }
-  
+
   return (
     <div className="min-h-[calc(100vh-64px)] bg-gray-50 py-12 px-4">
       <div className="max-w-3xl mx-auto">
@@ -656,7 +656,7 @@ function OnboardingPage() {
              step === 2 ? "Set your knowledge level and preferences" :
              "Almost done! Configure your notifications"}
           </p>
-          
+
           {/* Progress indicator */}
           <div className="mt-8 flex items-center justify-center">
             <div className={`h-2 w-2 md:h-3 md:w-3 rounded-full ${step >= 1 ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
@@ -666,19 +666,19 @@ function OnboardingPage() {
             <div className={`h-2 w-2 md:h-3 md:w-3 rounded-full ${step >= 3 ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
           </div>
         </div>
-        
+
         {error && (
           <div className="rounded-md bg-red-50 p-4 mb-6">
             <div className="text-sm text-red-700">{error}</div>
           </div>
         )}
-        
+
         {/* Step 1: Interests */}
         {step === 1 && (
           <div className="bg-white shadow rounded-lg p-6">
             <h2 className="text-xl font-semibold mb-4">Select Your Interests</h2>
             <p className="text-gray-600 mb-6">Choose topics you're interested in following. You can change these later.</p>
-            
+
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {availableInterests.map((interest) => (
                 <div 
@@ -707,11 +707,11 @@ function OnboardingPage() {
                 </div>
               ))}
             </div>
-            
+
             {interests.length === 0 && (
               <p className="mt-4 text-sm text-red-500">Please select at least one interest</p>
             )}
-            
+
             <div className="mt-8 flex justify-end">
               <button
                 onClick={handleNext}
@@ -727,7 +727,7 @@ function OnboardingPage() {
             </div>
           </div>
         )}
-        
+
         {/* Step 2: Knowledge Level */}
         {step === 2 && (
           <div className="bg-white shadow rounded-lg p-6">
@@ -735,7 +735,7 @@ function OnboardingPage() {
             <p className="text-gray-600 mb-6">
               This helps us adjust the complexity of summaries and explanations to your expertise.
             </p>
-            
+
             <div className="space-y-4">
               <div 
                 className={`p-4 border rounded-lg cursor-pointer ${
@@ -760,7 +760,7 @@ function OnboardingPage() {
                   I'm new to AI or just starting to learn. I prefer simple explanations without technical jargon.
                 </p>
               </div>
-              
+
               <div 
                 className={`p-4 border rounded-lg cursor-pointer ${
                   knowledgeLevel === "Intermediate" 
@@ -784,7 +784,7 @@ function OnboardingPage() {
                   I have some familiarity with AI concepts. I can handle some technical terms but appreciate context.
                 </p>
               </div>
-              
+
               <div 
                 className={`p-4 border rounded-lg cursor-pointer ${
                   knowledgeLevel === "Expert" 
@@ -809,7 +809,7 @@ function OnboardingPage() {
                 </p>
               </div>
             </div>
-            
+
             <div className="mt-8 flex justify-between">
               <button
                 onClick={handleBack}
@@ -826,7 +826,7 @@ function OnboardingPage() {
             </div>
           </div>
         )}
-        
+
         {/* Step 3: Email Preferences */}
         {step === 3 && (
           <div className="bg-white shadow rounded-lg p-6">
@@ -834,7 +834,7 @@ function OnboardingPage() {
             <p className="text-gray-600 mb-6">
               Configure how you'd like to receive updates from AI Industry Navigator.
             </p>
-            
+
             <div className="space-y-6">
               <div className="flex items-center">
                 <input 
@@ -848,7 +848,7 @@ function OnboardingPage() {
                   Receive email digests
                 </label>
               </div>
-              
+
               {emailDigests && (
                 <div className="ml-6">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Digest frequency</label>
@@ -880,12 +880,12 @@ function OnboardingPage() {
                   </div>
                 </div>
               )}
-              
+
               <p className="text-sm text-gray-500 mt-4">
                 You can change these preferences or opt out at any time from your profile.
               </p>
             </div>
-            
+
             <div className="mt-8 flex justify-between">
               <button
                 onClick={handleBack}
@@ -917,13 +917,13 @@ function FeedPage() {
   const [query, setQuery] = useState("");
   const [queryAnswer, setQueryAnswer] = useState("");
   const [queryLoading, setQueryLoading] = useState(false);
-  
+
   useEffect(() => {
     async function fetchFeed() {
       try {
         // First try to get the personalized feed
         const response = await axios.get(`${API}/articles/feed`);
-        
+
         if (response.data && response.data.length > 0) {
           setArticles(response.data);
         } else {
@@ -935,7 +935,7 @@ function FeedPage() {
         setLoading(false);
       } catch (err) {
         console.error("Error fetching feed:", err);
-        
+
         // Fallback to general articles if personalized feed fails
         try {
           console.log("Trying to fetch general articles as fallback");
@@ -949,35 +949,35 @@ function FeedPage() {
         }
       }
     }
-    
+
     fetchFeed();
   }, []);
-  
+
   const handleArticleClick = (article) => {
     setActiveArticle(article);
     setExplanation("");
     setQuery("");
     setQueryAnswer("");
   };
-  
+
   const handleExplain = async () => {
     if (!activeArticle) return;
-    
+
     setExplanationLoading(true);
     try {
       // If content is available, use that; otherwise use the summary
       const contentToExplain = activeArticle.content || activeArticle.summary;
-      
+
       if (!contentToExplain) {
         setExplanation("No content available to explain.");
         return;
       }
-      
+
       const response = await axios.post(`${API}/articles/summarize`, {
         content: contentToExplain,
         knowledge_level: localStorage.getItem("knowledgeLevel") || "Intermediate"
       });
-      
+
       setExplanation(response.data.summary);
     } catch (err) {
       console.error("Error getting explanation:", err);
@@ -986,18 +986,18 @@ function FeedPage() {
       setExplanationLoading(false);
     }
   };
-  
+
   const handleQuerySubmit = async (e) => {
     e.preventDefault();
     if (!query.trim() || !activeArticle) return;
-    
+
     setQueryLoading(true);
     try {
       // If the article has content, use article_id; otherwise provide the content directly
       const payload = {
         query: query
       };
-      
+
       if (activeArticle.id) {
         payload.article_id = activeArticle.id;
       } else if (activeArticle.content) {
@@ -1005,9 +1005,9 @@ function FeedPage() {
       } else if (activeArticle.summary) {
         payload.context = activeArticle.summary;
       }
-      
+
       const response = await axios.post(`${API}/articles/ask`, payload);
-      
+
       setQueryAnswer(response.data.answer);
     } catch (err) {
       console.error("Error getting answer:", err);
@@ -1016,14 +1016,14 @@ function FeedPage() {
       setQueryLoading(false);
     }
   };
-  
+
   const handleFeedback = async (articleId, type) => {
     try {
       await axios.post(`${API}/articles/${articleId}/feedback`, {
         article_id: articleId,
         feedback_type: type
       });
-      
+
       // Update UI to show feedback was given
       const updatedArticles = articles.map(article => {
         if (article.id === articleId) {
@@ -1031,13 +1031,13 @@ function FeedPage() {
         }
         return article;
       });
-      
+
       setArticles(updatedArticles);
     } catch (err) {
       console.error("Error providing feedback:", err);
     }
   };
-  
+
   if (loading) {
     return (
       <div className="min-h-[calc(100vh-64px)] flex items-center justify-center">
@@ -1045,18 +1045,18 @@ function FeedPage() {
       </div>
     );
   }
-  
+
   return (
     <div className="bg-gray-50 min-h-[calc(100vh-64px)]">
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold mb-8">Your AI News Feed</h1>
-        
+
         {error && (
           <div className="rounded-md bg-red-50 p-4 mb-6">
             <div className="text-sm text-red-700">{error}</div>
           </div>
         )}
-        
+
         <div className="flex flex-col md:flex-row gap-6">
           {/* Articles list - left side */}
           <div className="md:w-1/2 lg:w-2/5">
@@ -1064,7 +1064,7 @@ function FeedPage() {
               <div className="px-4 py-3 bg-gray-100 border-b">
                 <h2 className="font-semibold">Latest Articles</h2>
               </div>
-              
+
               <div className="divide-y">
                 {articles.length === 0 ? (
                   <div className="p-4 text-center text-gray-500">
@@ -1087,7 +1087,7 @@ function FeedPage() {
                         {article.source_name} • {new Date(article.published_date).toLocaleDateString()}
                       </p>
                       <p className="text-sm line-clamp-3">{article.summary}</p>
-                      
+
                       <div className="mt-3 flex gap-2">
                         <button 
                           onClick={(e) => {
@@ -1122,7 +1122,7 @@ function FeedPage() {
               </div>
             </div>
           </div>
-          
+
           {/* Article detail and AI features - right side */}
           <div className="md:w-1/2 lg:w-3/5">
             {activeArticle ? (
@@ -1132,7 +1132,7 @@ function FeedPage() {
                   <p className="text-sm text-gray-500 mb-4">
                     {activeArticle.source_name} • {new Date(activeArticle.published_date).toLocaleDateString()}
                   </p>
-                  
+
                   {activeArticle.image_url && (
                     <img 
                       src={activeArticle.image_url} 
@@ -1140,10 +1140,10 @@ function FeedPage() {
                       className="w-full h-48 object-cover mb-4 rounded"
                     />
                   )}
-                  
+
                   <div className="prose prose-sm max-w-none mb-6">
                     <p>{activeArticle.summary}</p>
-                    
+
                     <div className="mt-4">
                       <a 
                         href={activeArticle.url} 
@@ -1155,7 +1155,7 @@ function FeedPage() {
                       </a>
                     </div>
                   </div>
-                  
+
                   <div className="border-t pt-4">
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="font-medium">AI Assistance</h3>
@@ -1167,14 +1167,14 @@ function FeedPage() {
                         {explanationLoading ? "Generating..." : "Explain this article"}
                       </button>
                     </div>
-                    
+
                     {explanation && (
                       <div className="bg-blue-50 p-4 rounded-lg mb-4">
                         <h4 className="text-sm font-semibold text-blue-800 mb-2">AI Explanation:</h4>
                         <p className="text-sm">{explanation}</p>
                       </div>
                     )}
-                    
+
                     <form onSubmit={handleQuerySubmit} className="mt-4">
                       <div className="flex gap-2">
                         <input
@@ -1197,7 +1197,7 @@ function FeedPage() {
                         </button>
                       </div>
                     </form>
-                    
+
                     {queryAnswer && (
                       <div className="bg-gray-50 p-4 rounded-lg mt-4">
                         <h4 className="text-sm font-semibold mb-2">Answer:</h4>
