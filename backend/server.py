@@ -707,6 +707,79 @@ async def startup_db_client():
         ]
         await db.news_sources.insert_many(default_sources)
     
+    # Add some demo articles if none exist
+    if await db.articles.count_documents({}) == 0:
+        logging.info("No articles found, adding demo articles...")
+        demo_articles = [
+            {
+                "id": str(uuid.uuid4()),
+                "title": "Google Introduces New Gemini Updates for Developers",
+                "url": "https://blog.google/technology/ai/gemini-api-developers-launch/",
+                "source_name": "Google AI Blog",
+                "published_date": datetime.utcnow() - timedelta(days=1),
+                "categories": ["Machine Learning", "NLP"],
+                "summary": "Google has announced new updates to Gemini, their large language model. The updates include improved APIs for developers, better performance, and new capabilities like code generation and structured outputs.",
+                "content": "Google has announced significant updates to their Gemini AI model aimed at developers. The new capabilities include improved API access, better performance on complex reasoning tasks, and enhanced capabilities for code generation. The Gemini model is now available through Google Cloud with more flexible pricing options for different usage patterns. Developers can access Gemini through Google's Vertex AI platform or through direct API calls. The model has shown significant improvements in benchmarks related to coding, mathematics, and multimodal reasoning. Google is also introducing new tools for fine-tuning and prompt engineering to help developers get better results.",
+                "image_url": "https://storage.googleapis.com/gweb-uniblog-publish-prod/images/Gemini_API.max-1000x1000.jpg",
+                "is_trending": True,
+                "created_at": datetime.utcnow()
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "title": "New Research Shows Progress in AI Ethics Guidelines",
+                "url": "https://example.com/ai-ethics-research",
+                "source_name": "AI Ethics Journal",
+                "published_date": datetime.utcnow() - timedelta(days=2),
+                "categories": ["AI Ethics", "AI Policy"],
+                "summary": "A new study has found that major AI companies are improving their adherence to ethical guidelines, though gaps remain in implementation and enforcement of these standards.",
+                "content": "A comprehensive study published today in the AI Ethics Journal shows significant progress in how major technology companies are implementing AI ethical guidelines. The research, conducted over a two-year period, evaluated 25 major AI companies and their approach to ethical AI development. Results indicate that 78% of companies now have formal ethics guidelines, up from 45% two years ago. However, the study also identifies significant gaps in how these guidelines are enforced, with only 32% of companies having independent ethics review boards with meaningful authority. The researchers recommend stronger external oversight mechanisms and greater transparency in how ethical decisions are made within AI development teams. The study also highlights best practices from companies that have successfully integrated ethical considerations into their development processes.",
+                "image_url": "https://images.unsplash.com/photo-1620712943543-bcc4688e7485",
+                "is_trending": True,
+                "created_at": datetime.utcnow()
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "title": "Breakthrough in AI for Cancer Detection",
+                "url": "https://example.com/ai-cancer-detection",
+                "source_name": "Healthcare AI News",
+                "published_date": datetime.utcnow() - timedelta(days=3),
+                "categories": ["AI in Healthcare", "Computer Vision"],
+                "summary": "Researchers have developed a new AI system that can detect early-stage cancer from medical imaging with higher accuracy than traditional methods, potentially saving thousands of lives through earlier intervention.",
+                "content": "A team of researchers from Stanford University and Memorial Sloan Kettering Cancer Center have announced a breakthrough in using artificial intelligence for cancer detection. Their system, which combines advanced computer vision techniques with large-scale medical imaging datasets, has demonstrated the ability to identify early-stage cancer with 94% accuracy, compared to 72% accuracy for traditional screening methods. The AI system was trained on over 1 million anonymized medical images and validated across multiple independent datasets. Particularly promising results were seen in detecting lung, breast, and colorectal cancers at stages where treatment is most effective. The researchers are now working with regulatory authorities to begin clinical trials, with hopes of bringing the technology to hospitals within two years. If successful, the system could significantly increase cancer survival rates through earlier detection and intervention.",
+                "image_url": "https://images.unsplash.com/photo-1576086213369-97a306d36557",
+                "is_trending": False,
+                "created_at": datetime.utcnow()
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "title": "AI Startup Raises $200M for Robotics Revolution",
+                "url": "https://example.com/robotics-startup-funding",
+                "source_name": "VentureBeat AI",
+                "published_date": datetime.utcnow() - timedelta(days=4),
+                "categories": ["AI Startups", "Robotics"],
+                "summary": "RoboMinds, an emerging leader in AI-powered industrial robotics, has secured $200 million in Series C funding to expand its manufacturing automation platform across North America and Europe.",
+                "content": "RoboMinds, a rapidly growing startup in the AI robotics space, has announced a $200 million Series C funding round led by Sequoia Capital with participation from Andreessen Horowitz and Tiger Global. The company, founded in 2020, has developed an innovative platform that combines advanced computer vision with reinforcement learning to create versatile robotics systems for manufacturing environments. Unlike traditional industrial robots that require extensive programming for specific tasks, RoboMinds' systems can adapt to new tasks through demonstration and natural language instructions. The company has already deployed its technology in automotive and electronics manufacturing facilities, demonstrating productivity improvements of 35-40% compared to traditional automation systems. The new funding will be used to expand the company's presence in North America and Europe, with plans to double its engineering team and establish new demonstration facilities in Detroit, Stuttgart, and Tokyo. Industry analysts see this as a significant development in making advanced robotics more accessible to mid-sized manufacturers who have previously struggled with the complexity and cost of robotics implementation.",
+                "image_url": "https://images.unsplash.com/photo-1525609004556-c46c7d6cf023",
+                "is_trending": True,
+                "created_at": datetime.utcnow()
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "title": "New Benchmark Shows AI Systems Approaching Human Performance in Reasoning Tasks",
+                "url": "https://example.com/ai-reasoning-benchmark",
+                "source_name": "AI Research Institute",
+                "published_date": datetime.utcnow() - timedelta(days=5),
+                "categories": ["AI Research", "Machine Learning"],
+                "summary": "A new comprehensive benchmark for evaluating AI reasoning capabilities shows top models are now achieving 87% of human performance on complex logical and mathematical reasoning tasks, a significant improvement from last year.",
+                "content": "The AI Research Institute has released results from its 2025 Reasoning and Logic Benchmark (RLB), showing remarkable progress in AI systems' ability to handle complex reasoning tasks. The benchmark includes a diverse set of problems ranging from formal logic and mathematical proofs to commonsense reasoning about physical scenarios. According to the results, the top-performing AI systems now achieve 87% of human expert performance across all categories, up from 74% in last year's evaluation. Particularly notable is the progress in multi-step reasoning, where systems must construct chains of logical deductions to solve problems. The most advanced models showed a 25% improvement in this area compared to last year. The benchmark evaluated 12 leading AI systems from research labs and companies across the globe. OpenAI's latest GPT model and Anthropic's Claude system showed the strongest overall performance, while Google's PaLM-X excelled specifically in mathematical reasoning. Researchers attribute the improvements to advances in training methodologies that better equip models to decompose complex problems into manageable steps, as well as architectural innovations that enhance memory and attention mechanisms. Despite the progress, significant gaps remain in areas requiring abstract conceptualization and creative problem-solving approaches that humans typically excel at.",
+                "image_url": "https://images.unsplash.com/photo-1509228627152-72ae9ae6848d",
+                "is_trending": False,
+                "created_at": datetime.utcnow()
+            }
+        ]
+        await db.articles.insert_many(demo_articles)
+        logging.info(f"Added {len(demo_articles)} demo articles")
+    
     # Start the scheduler for article ingestion
     scheduler.add_job(
         ingest_all_feeds,
