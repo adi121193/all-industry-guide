@@ -105,7 +105,7 @@ function AuthProvider({ children }) {
 }
 
 // Protected route component
-function ProtectedRoute({ children }) {
+function ProtectedRoute({ children, requireOnboarding = true }) {
   const { user, loading } = React.useContext(AuthContext);
   
   if (loading) {
@@ -114,6 +114,11 @@ function ProtectedRoute({ children }) {
   
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+
+  // Redirect new users to onboarding (unless we're already on the onboarding page)
+  if (requireOnboarding && user.isNewUser && window.location.pathname !== '/onboarding') {
+    return <Navigate to="/onboarding" replace />;
   }
   
   return children;
