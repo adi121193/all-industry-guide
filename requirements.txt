@@ -40,3 +40,10 @@ feedparser
 google-generativeai
 motor
 slowapi
+apscheduler
+beautifulsoup4
+feedparser
+google-generativeai
+motor
+passlib
+slowapi

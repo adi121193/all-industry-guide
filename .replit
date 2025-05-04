@@ -19,3 +19,12 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "uvicorn backend.server:app --host 0.0.0.0 --port 5000 --reload"
+
+[[workflows.workflow]]
+name = "Run Frontend"
+author = 35807311
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd frontend && npm start"
