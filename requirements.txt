@@ -50,3 +50,5 @@ slowapi
 email-validator
 email-validator
 python-multipart
+motor
+pymongo

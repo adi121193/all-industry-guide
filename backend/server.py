@@ -34,10 +34,14 @@ import jwt
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+# MongoDB connection with retry logic
+try:
+    mongo_url = os.environ['MONGO_URL']
+    client = AsyncIOMotorClient(mongo_url, serverSelectionTimeoutMS=5000)
+    db = client[os.environ['DB_NAME']]
+except Exception as e:
+    print(f"Failed to connect to MongoDB: {e}")
+    raise
 
 # Supabase client (optional)
 supabase = None
@@ -93,7 +97,7 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str
-    
+
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
@@ -200,7 +204,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
             raise credentials_exception
     except jwt.PyJWTError:
         raise credentials_exception
-    
+
     user = await db.users.find_one({"id": user_id})
     if user is None:
         raise credentials_exception
@@ -216,11 +220,11 @@ async def summarize_article(article_content: str, knowledge_level: str) -> str:
         If the reader is a Beginner, make it more accessible with simple explanations.
         If the reader is an Expert, you can use technical terminology where appropriate.
         Keep the summary clear and concise (2-5 sentences).
-        
+
         Article content:
         {article_content}
         """
-        
+
         response = model.generate_content(prompt)
         return response.text
     except Exception as e:
@@ -233,13 +237,13 @@ async def answer_question(query: str, context: Optional[str] = None) -> str:
         prompt = f"""
         Please answer the following question about AI or technology. 
         Be accurate, helpful, and concise.
-        
+
         Question: {query}
         """
-        
+
         if context:
             prompt += f"\n\nContext (use this information to help with your answer):\n{context}"
-        
+
         response = model.generate_content(prompt)
         return response.text
     except Exception as e:
@@ -262,21 +266,21 @@ async def parse_feed(feed_url: str, source_id: str, source_name: str) -> List[di
     try:
         feed = feedparser.parse(feed_url)
         articles = []
-        
+
         for entry in feed.entries[:10]:  # Limit to 10 articles per source
             # Extract data
             title = entry.get('title', 'No title')
             link = entry.get('link', None)
             if not link:
                 continue
-                
+
             published = entry.get('published_parsed', None)
             published_date = None
             if published:
                 published_date = datetime.fromtimestamp(datetime.timestamp(
                     datetime(*published[:6])
                 ))
-            
+
             # Extract content using requests and BeautifulSoup
             try:
                 headers = {
@@ -284,14 +288,14 @@ async def parse_feed(feed_url: str, source_id: str, source_name: str) -> List[di
                 }
                 response = requests.get(link, headers=headers, timeout=10)
                 soup = BeautifulSoup(response.content, 'html.parser')
-                
+
                 # Remove script and style elements
                 for script in soup(["script", "style"]):
                     script.extract()
-                
+
                 # Get text content
                 content = soup.get_text(separator='\n', strip=True)
-                
+
                 # Try to find a main image
                 image_url = None
                 img_tags = soup.find_all('img', class_=lambda c: c and ('hero' in c.lower() or 'featured' in c.lower() or 'main' in c.lower()))
@@ -300,7 +304,7 @@ async def parse_feed(feed_url: str, source_id: str, source_name: str) -> List[di
                         if img.get('src'):
                             image_url = img.get('src')
                             break
-                
+
                 # If no specific image found, try to get the largest image
                 if not image_url:
                     img_tags = soup.find_all('img')
@@ -319,10 +323,10 @@ async def parse_feed(feed_url: str, source_id: str, source_name: str) -> List[di
                 logging.warning(f"Error parsing article content: {str(e)}")
                 content = entry.get('summary', 'No content available')
                 image_url = None
-                
+
             # Generate summary with Gemini
             summary = await summarize_article(content[:4000], "Intermediate")  # Limit content length
-            
+
             articles.append({
                 "id": str(uuid.uuid4()),
                 "title": title,
@@ -337,50 +341,50 @@ async def parse_feed(feed_url: str, source_id: str, source_name: str) -> List[di
                 "is_trending": False,
                 "created_at": datetime.utcnow()
             })
-        
+
         return articles
     except Exception as e:
         logging.error(f"Error parsing feed {feed_url}: {str(e)}")
         return []
-    
+
 # Scheduled ingestion job
 async def ingest_all_feeds():
     """Ingest articles from all enabled news sources"""
     try:
         sources = await db.news_sources.find({"enabled": True}).to_list(100)
-        
+
         for source in sources:
             if not source.get("rss_url"):
                 continue
-                
+
             logging.info(f"Ingesting from source: {source['name']}")
             articles = await parse_feed(
                 source["rss_url"], 
                 source["id"], 
                 source["name"]
             )
-            
+
             if articles:
                 # Filter articles - don't add duplicates
                 existing_urls = set()
                 existing_titles = set()
-                
+
                 # Get existing articles from last 3 days
                 three_days_ago = datetime.utcnow() - timedelta(days=3)
                 existing = await db.articles.find({
                     "created_at": {"$gte": three_days_ago}
                 }).to_list(1000)
-                
+
                 for existing_article in existing:
                     existing_urls.add(existing_article["url"])
                     existing_titles.add(existing_article["title"])
-                
+
                 # Filter and insert new articles
                 new_articles = []
                 for article in articles:
                     if article["url"] not in existing_urls and article["title"] not in existing_titles:
                         new_articles.append(article)
-                
+
                 if new_articles:
                     await db.articles.insert_many(new_articles)
                     logging.info(f"Added {len(new_articles)} new articles from {source['name']}")
@@ -399,27 +403,27 @@ async def register_user(user_create: UserCreate):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already registered"
         )
-    
+
     # Create new user
     hashed_password = hash_password(user_create.password)
     new_user = User(
         email=user_create.email,
         name=user_create.name
     )
-    
+
     user_dict = new_user.dict()
     user_dict["hashed_password"] = hashed_password
     if "password" in user_dict:
         del user_dict["password"]
-    
+
     # Insert to database
     await db.users.insert_one(user_dict)
-    
+
     # Generate token
     access_token = create_access_token(
         data={"sub": new_user.id}
     )
-    
+
     return Token(
         access_token=access_token,
         token_type="bearer",
@@ -437,7 +441,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
     # Verify password
     if not verify_password(form_data.password, user["hashed_password"]):
         raise HTTPException(
@@ -445,12 +449,12 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
     # Generate token
     access_token = create_access_token(
         data={"sub": user["id"]}
     )
-    
+
     return Token(
         access_token=access_token,
         token_type="bearer",
@@ -478,18 +482,18 @@ async def update_preferences(
             "slack_webhook": preferences.slack_webhook,
             "is_onboarding_complete": True
         }
-        
+
         result = await db.users.update_one(
             {"id": current_user.id},
             {"$set": update_data}
         )
-        
+
         if result.modified_count == 0:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Failed to update preferences"
             )
-        
+
         # Return updated user
         updated_user = await db.users.find_one({"id": current_user.id})
         if not updated_user:
@@ -497,7 +501,7 @@ async def update_preferences(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="User not found"
             )
-            
+
         return User(**updated_user)
     except Exception as e:
         logging.error(f"Error updating preferences: {str(e)}")
@@ -517,28 +521,28 @@ async def get_articles(
 ):
     # Build query
     query = {}
-    
+
     # Filter by user interests if requested
     if categories:
         category_list = categories.split(",")
         query["categories"] = {"$in": category_list}
-    
+
     # Filter by trending status if requested
     if trending is not None:
         query["is_trending"] = trending
-    
+
     # Get articles
     articles_cursor = db.articles.find(query)
-    
+
     # Sort by latest first
     articles_cursor = articles_cursor.sort("published_date", -1)
-    
+
     # Apply pagination
     articles_cursor = articles_cursor.skip(skip).limit(limit)
-    
+
     # Convert to list
     articles = await articles_cursor.to_list(length=limit)
-    
+
     # Format and return
     return [Article(**article) for article in articles]
 
@@ -550,37 +554,37 @@ async def get_personalized_feed(
 ):
     """Get a personalized feed based on user interests"""
     query = {}
-    
+
     # Apply user interests if available
     if current_user.interests:
         query["categories"] = {"$in": current_user.interests}
-    
+
     # Get articles
     articles_cursor = db.articles.find(query)
-    
+
     # Sort by latest first
     articles_cursor = articles_cursor.sort("published_date", -1)
-    
+
     # Apply pagination
     articles_cursor = articles_cursor.skip(skip).limit(limit)
-    
+
     # Convert to list
     articles = await articles_cursor.to_list(length=limit)
-    
+
     # If no articles with user interests, fallback to latest articles
     if not articles and current_user.interests:
         articles = await db.articles.find().sort("published_date", -1).limit(limit).to_list(length=limit)
-    
+
     # Add some trending articles if available
     trending_articles = await db.articles.find({"is_trending": True}).limit(3).to_list(length=3)
-    
+
     # Combine and deduplicate
     article_ids = set(a["id"] for a in articles)
     for trending in trending_articles:
         if trending["id"] not in article_ids:
             articles.append(trending)
             article_ids.add(trending["id"])
-    
+
     # Format and return
     return [Article(**article) for article in articles]
 
@@ -595,7 +599,7 @@ async def get_article(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Article not found"
         )
-    
+
     return Article(**article)
 
 @api_router.post("/articles/summarize")
@@ -604,7 +608,7 @@ async def summarize_article_endpoint(
     current_user: User = Depends(get_current_user)
 ):
     content = request.content
-    
+
     # If URL is provided but not content, fetch the content
     if request.url and not content:
         try:
@@ -613,11 +617,11 @@ async def summarize_article_endpoint(
             }
             response = requests.get(str(request.url), headers=headers, timeout=10)
             soup = BeautifulSoup(response.content, 'html.parser')
-            
+
             # Remove script and style elements
             for script in soup(["script", "style"]):
                 script.extract()
-            
+
             # Get text content
             content = soup.get_text(separator='\n', strip=True)
         except Exception as e:
@@ -625,19 +629,19 @@ async def summarize_article_endpoint(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Failed to fetch article content: {str(e)}"
             )
-    
+
     if not content:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Either URL or content must be provided"
         )
-    
+
     # Generate summary
     summary = await summarize_article(
         content[:4000],  # Limit content length
         request.knowledge_level
     )
-    
+
     return {"summary": summary}
 
 @api_router.post("/articles/ask")
@@ -646,7 +650,7 @@ async def ask_about_article(
     current_user: User = Depends(get_current_user)
 ):
     context = query.context
-    
+
     # If article_id is provided but not context, fetch the article
     if query.article_id and not context:
         article = await db.articles.find_one({"id": query.article_id})
@@ -656,10 +660,10 @@ async def ask_about_article(
                 detail="Article not found"
             )
         context = article.get("content", "")
-    
+
     # Answer the question
     answer = await answer_question(query.query, context)
-    
+
     return {"answer": answer}
 
 @api_router.post("/articles/{article_id}/feedback")
@@ -675,14 +679,14 @@ async def provide_feedback(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Article not found"
         )
-    
+
     # Set the user_id and article_id
     feedback.user_id = current_user.id
     feedback.article_id = article_id
-    
+
     # Save feedback
     await db.feedback.insert_one(feedback.dict())
-    
+
     return {"status": "success", "message": "Feedback recorded"}
 
 # Interest and Category routes
@@ -714,7 +718,7 @@ async def startup_db_client():
             {"id": str(uuid.uuid4()), "name": "Robotics", "description": "AI in robotics and autonomous systems"}
         ]
         await db.interest_categories.insert_many(default_categories)
-    
+
     # Set up default news sources if none exist
     if await db.news_sources.count_documents({}) == 0:
         default_sources = [
@@ -752,7 +756,7 @@ async def startup_db_client():
             }
         ]
         await db.news_sources.insert_many(default_sources)
-    
+
     # Add some demo articles if none exist
     if await db.articles.count_documents({}) == 0:
         logging.info("No articles found, adding demo articles...")
@@ -792,7 +796,7 @@ async def startup_db_client():
                 "categories": ["AI in Healthcare", "Computer Vision"],
                 "summary": "Researchers have developed a new AI system that can detect early-stage cancer from medical imaging with higher accuracy than traditional methods, potentially saving thousands of lives through earlier intervention.",
                 "content": "A team of researchers from Stanford University and Memorial Sloan Kettering Cancer Center have announced a breakthrough in using artificial intelligence for cancer detection. Their system, which combines advanced computer vision techniques with large-scale medical imaging datasets, has demonstrated the ability to identify early-stage cancer with 94% accuracy, compared to 72% accuracy for traditional screening methods. The AI system was trained on over 1 million anonymized medical images and validated across multiple independent datasets. Particularly promising results were seen in detecting lung, breast, and colorectal cancers at stages where treatment is most effective. The researchers are now working with regulatory authorities to begin clinical trials, with hopes of bringing the technology to hospitals within two years. If successful, the system could significantly increase cancer survival rates through earlier detection and intervention.",
-                "image_url": "https://images.unsplash.com/photo-1576086213369-97a306d36557",
+                "image_url":"https://images.unsplash.com/photo-1576086213369-97a306d36557",
                 "is_trending": False,
                 "created_at": datetime.utcnow()
             },
@@ -825,17 +829,17 @@ async def startup_db_client():
         ]
         await db.articles.insert_many(demo_articles)
         logging.info(f"Added {len(demo_articles)} demo articles")
-    
+
     # Start the scheduler for article ingestion
     scheduler.add_job(
         ingest_all_feeds,
         CronTrigger(hour="*/3"),  # Run every 3 hours
         id="ingest_feeds"
     )
-    
+
     # Run ingestion initially to populate articles
     asyncio.create_task(ingest_all_feeds())
-    
+
     # Start the scheduler
     scheduler.start()
 
@@ -843,7 +847,7 @@ async def startup_db_client():
 async def shutdown_db_client():
     # Shut down scheduler
     scheduler.shutdown()
-    
+
     # Close MongoDB connection
     client.close()
 
