@@ -7,12 +7,13 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 from slowapi.util import get_remote_address
-from motor.motor_asyncio import AsyncIOMotorClient
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 import os
+from typing import Dict, Any
 
 from supabase import create_client, Client
+from supabase.lib.client_options import ClientOptions
 
 import logging
 import feedparser
@@ -706,7 +707,9 @@ async def get_sources(current_user: User = Depends(get_current_user)):
 @app.on_event("startup")
 async def startup_db_client():
     # Set up default interest categories if none exist
-    if await db.interest_categories.count_documents({}) == 0:
+    try:
+        result = supabase.table('interest_categories').select('*').execute()
+        if not result.data:
         default_categories = [
             {"id": str(uuid.uuid4()), "name": "Machine Learning", "description": "Machine learning algorithms and techniques"},
             {"id": str(uuid.uuid4()), "name": "AI Research", "description": "Academic research in artificial intelligence"},
@@ -718,10 +721,12 @@ async def startup_db_client():
             {"id": str(uuid.uuid4()), "name": "AI Policy", "description": "Government policies and regulations related to AI"},
             {"id": str(uuid.uuid4()), "name": "Robotics", "description": "AI in robotics and autonomous systems"}
         ]
-        await db.interest_categories.insert_many(default_categories)
+        for category in default_categories:
+                supabase.table('interest_categories').insert(category).execute()
 
     # Set up default news sources if none exist
-    if await db.news_sources.count_documents({}) == 0:
+    result = supabase.table('news_sources').select('*').execute()
+    if not result.data:
         default_sources = [
             {
                 "id": str(uuid.uuid4()),
@@ -756,10 +761,12 @@ async def startup_db_client():
                 "enabled": True
             }
         ]
-        await db.news_sources.insert_many(default_sources)
+        for source in default_sources:
+                supabase.table('news_sources').insert(source).execute()
 
     # Add some demo articles if none exist
-    if await db.articles.count_documents({}) == 0:
+    result = supabase.table('articles').select('*').execute()
+    if not result.data:
         logging.info("No articles found, adding demo articles...")
         demo_articles = [
             {
@@ -828,7 +835,8 @@ async def startup_db_client():
                 "created_at": datetime.utcnow()
             }
         ]
-        await db.articles.insert_many(demo_articles)
+        for article in demo_articles:
+                supabase.table('articles').insert(article).execute()
         logging.info(f"Added {len(demo_articles)} demo articles")
 
     # Start the scheduler for article ingestion
