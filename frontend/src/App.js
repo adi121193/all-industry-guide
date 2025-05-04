@@ -105,6 +105,8 @@ function AuthProvider({ children }) {
 }
 
 // Protected route component
+import ArticleDetailPage from './components/ArticleDetailPage';
+
 function ProtectedRoute({ children, requireOnboarding = true }) {
   const { user, loading } = React.useContext(AuthContext);
   

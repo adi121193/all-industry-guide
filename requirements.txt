@@ -47,3 +47,5 @@ google-generativeai
 motor
 passlib
 slowapi
+email-validator
+email-validator
