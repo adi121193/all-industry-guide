@@ -15,6 +15,8 @@ import asyncio
 import aiohttp
 import google.generativeai as genai
 import newspaper
+import requests
+from bs4 import BeautifulSoup
 from newspaper import Article
 from typing import List, Optional, Dict, Any
 from pathlib import Path
