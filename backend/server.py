@@ -107,6 +107,7 @@ class User(UserBase):
     email_frequency: str = "Weekly"
     slack_enabled: bool = False
     slack_webhook: Optional[str] = None
+    is_onboarding_complete: bool = False
 
 class Token(BaseModel):
     access_token: str
@@ -467,14 +468,15 @@ async def update_preferences(
     current_user: User = Depends(get_current_user)
 ):
     try:
-        # Update user preferences
+        # Update user preferences and mark onboarding as complete
         update_data = {
             "interests": preferences.interests,
             "knowledge_level": preferences.knowledge_level,
             "email_digests": preferences.email_digests,
             "email_frequency": preferences.email_frequency,
             "slack_enabled": preferences.slack_enabled,
-            "slack_webhook": preferences.slack_webhook
+            "slack_webhook": preferences.slack_webhook,
+            "is_onboarding_complete": True
         }
         
         result = await db.users.update_one(

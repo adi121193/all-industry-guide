@@ -117,8 +117,8 @@ function ProtectedRoute({ children, requireOnboarding = true }) {
     return <Navigate to="/login" replace />;
   }
 
-  // Redirect new users to onboarding (unless we're already on the onboarding page)
-  if (requireOnboarding && user.isNewUser && window.location.pathname !== '/onboarding') {
+  // Redirect users who haven't completed onboarding (unless we're already on the onboarding page)
+  if (requireOnboarding && !user.is_onboarding_complete && window.location.pathname !== '/onboarding') {
     return <Navigate to="/onboarding" replace />;
   }
 

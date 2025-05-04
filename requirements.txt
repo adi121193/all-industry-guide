@@ -49,3 +49,4 @@ passlib
 slowapi
 email-validator
 email-validator
+python-multipart
