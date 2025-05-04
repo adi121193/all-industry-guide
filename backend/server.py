@@ -7,6 +7,9 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 import os
+
+from supabase import create_client, Client
+
 import logging
 import feedparser
 import datetime
@@ -31,6 +34,12 @@ load_dotenv(ROOT_DIR / '.env')
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
+
+# Supabase client
+supabase: Client = create_client(
+    os.environ.get('SUPABASE_URL', ''),
+    os.environ.get('SUPABASE_KEY', '')
+)
 
 # Create the main app without a prefix
 app = FastAPI(title="AI Industry Navigator API")
@@ -450,24 +459,43 @@ async def update_preferences(
     preferences: UserPreference,
     current_user: User = Depends(get_current_user)
 ):
-    # Update user preferences
-    update_data = {
-        "interests": preferences.interests,
-        "knowledge_level": preferences.knowledge_level,
-        "email_digests": preferences.email_digests,
-        "email_frequency": preferences.email_frequency,
-        "slack_enabled": preferences.slack_enabled,
-        "slack_webhook": preferences.slack_webhook
-    }
-    
-    await db.users.update_one(
-        {"id": current_user.id},
-        {"$set": update_data}
-    )
-    
-    # Return updated user
-    updated_user = await db.users.find_one({"id": current_user.id})
-    return User(**updated_user)
+    try:
+        # Update user preferences
+        update_data = {
+            "interests": preferences.interests,
+            "knowledge_level": preferences.knowledge_level,
+            "email_digests": preferences.email_digests,
+            "email_frequency": preferences.email_frequency,
+            "slack_enabled": preferences.slack_enabled,
+            "slack_webhook": preferences.slack_webhook
+        }
+        
+        result = await db.users.update_one(
+            {"id": current_user.id},
+            {"$set": update_data}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Failed to update preferences"
+            )
+        
+        # Return updated user
+        updated_user = await db.users.find_one({"id": current_user.id})
+        if not updated_user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+            
+        return User(**updated_user)
+    except Exception as e:
+        logging.error(f"Error updating preferences: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Could not save preferences. Please try again."
+        )
 
 # Article routes
 @api_router.get("/articles", response_model=List[Article])
