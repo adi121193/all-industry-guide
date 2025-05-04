@@ -73,22 +73,39 @@ class AIIndustryNavigatorTester:
 
     def test_login(self):
         """Test user login"""
-        login_data = {
+        # For OAuth2PasswordRequestForm, we need to use form data instead of JSON
+        url = f"{self.base_url}/api/users/login"
+        headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+        data = {
             "username": self.test_user["email"],
             "password": self.test_user["password"]
         }
-        success, response = self.run_test(
-            "User Login",
-            "POST",
-            "users/login",
-            200,
-            data=login_data
-        )
-        if success and 'access_token' in response:
-            self.token = response['access_token']
-            self.user_id = response.get('user_id')
-            return True
-        return False
+        
+        self.tests_run += 1
+        print(f"\n🔍 Testing User Login...")
+        
+        try:
+            response = requests.post(url, data=data, headers=headers)
+            
+            success = response.status_code == 200
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                response_data = response.json()
+                self.token = response_data.get('access_token')
+                self.user_id = response_data.get('user_id')
+                return True
+            else:
+                print(f"❌ Failed - Expected 200, got {response.status_code}")
+                try:
+                    print(f"Response: {response.json()}")
+                except:
+                    print(f"Response: {response.text}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False
 
     def test_get_user_profile(self):
         """Test getting user profile"""
