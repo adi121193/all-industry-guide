@@ -609,6 +609,8 @@ function OnboardingPage() {
     }
   };
   
+  const { user, setUser } = React.useContext(AuthContext);
+  
   const handleSubmit = async () => {
     try {
       await axios.put(`${API}/users/preferences`, {
@@ -620,7 +622,6 @@ function OnboardingPage() {
       });
       
       // Update user in localStorage and context to indicate onboarding is complete
-      const { user } = React.useContext(AuthContext);
       if (user) {
         const updatedUser = { ...user, isNewUser: false };
         localStorage.setItem("user", JSON.stringify(updatedUser));
