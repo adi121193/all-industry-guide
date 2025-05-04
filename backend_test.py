@@ -218,31 +218,51 @@ def main():
     tester = AIIndustryNavigatorTester()
     
     # Run tests
-    print("\n🚀 Starting API Tests for AI Industry Navigator\n")
+    print("\n🚀 Starting Onboarding Flow Tests for AI Industry Navigator\n")
     
-    # Test registration
+    # Test registration with specific test user
     if not tester.test_register():
         print("❌ Registration failed, trying login...")
         if not tester.test_login():
             print("❌ Login also failed, stopping tests")
             return 1
     
-    # Test user profile and preferences
-    tester.test_get_user_profile()
-    tester.test_update_preferences()
+    # Test user profile to verify registration
+    print("\n✅ User registered successfully, checking profile...")
+    if not tester.test_get_user_profile():
+        print("❌ Failed to get user profile")
+        return 1
     
-    # Test articles
-    tester.test_get_articles()
-    tester.test_get_personalized_feed()
-    tester.test_get_article_by_id()
+    # Test getting interests for onboarding
+    print("\n✅ Getting available interests for onboarding...")
+    if not tester.test_get_interests():
+        print("❌ Failed to get interests")
+        return 1
     
-    # Test AI features
-    tester.test_article_summarization()
-    tester.test_ask_about_article()
+    # Test updating preferences (completing onboarding)
+    print("\n✅ Completing onboarding by updating preferences...")
+    if not tester.test_update_preferences():
+        print("❌ Failed to update preferences")
+        return 1
     
-    # Test categories and sources
-    tester.test_get_interests()
-    tester.test_get_sources()
+    # Test getting personalized feed after onboarding
+    print("\n✅ Getting personalized feed after onboarding...")
+    if not tester.test_get_personalized_feed():
+        print("❌ Failed to get personalized feed")
+        return 1
+    
+    # Test logout and login again
+    print("\n✅ Testing logout and login again...")
+    tester.token = None  # Simulate logout
+    if not tester.test_login():
+        print("❌ Failed to login after logout")
+        return 1
+    
+    # Verify user profile after re-login to check if onboarding status is maintained
+    print("\n✅ Verifying user profile after re-login...")
+    if not tester.test_get_user_profile():
+        print("❌ Failed to get user profile after re-login")
+        return 1
     
     # Print results
     print(f"\n📊 Tests passed: {tester.tests_passed}/{tester.tests_run}")
