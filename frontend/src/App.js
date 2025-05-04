@@ -1226,16 +1226,7 @@ function FeedPage() {
   );
 }
 
-function ArticleDetailPage() {
-  return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-3xl mx-auto px-4">
-        <h1 className="text-2xl font-bold mb-4">Article Detail</h1>
-        <p>Article detail page content coming soon...</p>
-      </div>
-    </div>
-  );
-}
+
 
 function ExplorePage() {
   return (
