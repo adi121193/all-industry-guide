@@ -564,10 +564,18 @@ async def summarize_article_endpoint(
     # If URL is provided but not content, fetch the content
     if request.url and not content:
         try:
-            article = newspaper.Article(request.url)
-            article.download()
-            article.parse()
-            content = article.text
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            }
+            response = requests.get(str(request.url), headers=headers, timeout=10)
+            soup = BeautifulSoup(response.content, 'html.parser')
+            
+            # Remove script and style elements
+            for script in soup(["script", "style"]):
+                script.extract()
+            
+            # Get text content
+            content = soup.get_text(separator='\n', strip=True)
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
