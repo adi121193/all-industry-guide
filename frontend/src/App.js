@@ -620,7 +620,7 @@ function OnboardingPage() {
       });
       
       // Update user in localStorage and context to indicate onboarding is complete
-      const { user, setUser } = React.useContext(AuthContext);
+      const { user } = React.useContext(AuthContext);
       if (user) {
         const updatedUser = { ...user, isNewUser: false };
         localStorage.setItem("user", JSON.stringify(updatedUser));
@@ -1218,6 +1218,39 @@ function FeedPage() {
             )}
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function ArticleDetailPage() {
+  return (
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-3xl mx-auto px-4">
+        <h1 className="text-2xl font-bold mb-4">Article Detail</h1>
+        <p>Article detail page content coming soon...</p>
+      </div>
+    </div>
+  );
+}
+
+function ExplorePage() {
+  return (
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-3xl mx-auto px-4">
+        <h1 className="text-2xl font-bold mb-4">Explore</h1>
+        <p>Explore page content coming soon...</p>
+      </div>
+    </div>
+  );
+}
+
+function ProfilePage() {
+  return (
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-3xl mx-auto px-4">
+        <h1 className="text-2xl font-bold mb-4">Profile</h1>
+        <p>Profile page content coming soon...</p>
       </div>
     </div>
   );
