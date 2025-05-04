@@ -619,6 +619,14 @@ function OnboardingPage() {
         slack_enabled: false
       });
       
+      // Update user in localStorage and context to indicate onboarding is complete
+      const { user, setUser } = React.useContext(AuthContext);
+      if (user) {
+        const updatedUser = { ...user, isNewUser: false };
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        setUser(updatedUser);
+      }
+      
       navigate('/feed');
     } catch (err) {
       console.error("Error saving preferences:", err);
