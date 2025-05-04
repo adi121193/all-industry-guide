@@ -34,13 +34,16 @@ import jwt
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection with retry logic
+# Initialize Supabase client
+if not (supabase_url := os.environ.get('SUPABASE_URL')):
+    raise RuntimeError("SUPABASE_URL environment variable must be set")
+if not (supabase_key := os.environ.get('SUPABASE_KEY')):
+    raise RuntimeError("SUPABASE_KEY environment variable must be set")
+
 try:
-    mongo_url = os.environ['MONGO_URL']
-    client = AsyncIOMotorClient(mongo_url, serverSelectionTimeoutMS=5000)
-    db = client[os.environ['DB_NAME']]
+    supabase = create_client(supabase_url, supabase_key)
 except Exception as e:
-    print(f"Failed to connect to MongoDB: {e}")
+    print(f"Failed to initialize Supabase client: {e}")
     raise
 
 # Supabase client (optional)
@@ -434,12 +437,19 @@ async def register_user(user_create: UserCreate):
 @api_router.post("/users/login", response_model=Token)
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     # Find user
-    user = await db.users.find_one({"email": form_data.username})
-    if not user:
+    try:
+        response = supabase.table('users').select('*').eq('email', form_data.username).execute()
+        user = response.data[0] if response.data else None
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect email or password",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+    except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
-            headers={"WWW-Authenticate": "Bearer"},
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
         )
 
     # Verify password
