@@ -961,8 +961,17 @@ function FeedPage() {
     
     setExplanationLoading(true);
     try {
+      // If content is available, use that; otherwise use the summary
+      const contentToExplain = activeArticle.content || activeArticle.summary;
+      
+      if (!contentToExplain) {
+        setExplanation("No content available to explain.");
+        return;
+      }
+      
       const response = await axios.post(`${API}/articles/summarize`, {
-        content: activeArticle.content
+        content: contentToExplain,
+        knowledge_level: localStorage.getItem("knowledgeLevel") || "Intermediate"
       });
       
       setExplanation(response.data.summary);
