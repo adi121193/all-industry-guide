@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Link, Navigate, useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./App.css";
+import ArticleDetailPage from './components/ArticleDetailPage';
 
 // Backend URL from environment variables
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -105,8 +106,6 @@ function AuthProvider({ children }) {
 }
 
 // Protected route component
-import ArticleDetailPage from './components/ArticleDetailPage';
-
 function ProtectedRoute({ children, requireOnboarding = true }) {
   const { user, loading } = React.useContext(AuthContext);
   
