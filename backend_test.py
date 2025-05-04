@@ -13,9 +13,9 @@ class AIIndustryNavigatorTester:
         self.tests_run = 0
         self.tests_passed = 0
         self.test_user = {
-            "email": f"test_{uuid.uuid4()}@example.com",
+            "email": "test_user_1@example.com",
             "password": "password123",
-            "name": "Test User"
+            "name": "Test User 1"
         }
 
     def run_test(self, name, method, endpoint, expected_status, data=None, params=None):
