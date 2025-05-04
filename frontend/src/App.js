@@ -609,7 +609,7 @@ function OnboardingPage() {
     }
   };
   
-  const { user, setUser } = React.useContext(AuthContext);
+  const { user } = React.useContext(AuthContext);
   
   const handleSubmit = async () => {
     try {
@@ -621,13 +621,13 @@ function OnboardingPage() {
         slack_enabled: false
       });
       
-      // Update user in localStorage and context to indicate onboarding is complete
+      // Update user in localStorage to indicate onboarding is complete
       if (user) {
         const updatedUser = { ...user, isNewUser: false };
         localStorage.setItem("user", JSON.stringify(updatedUser));
         // Store knowledge level for use in explanations
         localStorage.setItem("knowledgeLevel", knowledgeLevel);
-        setUser(updatedUser);
+        window.location.href = '/feed'; // Force a reload to update the user state
       }
       
       navigate('/feed');
