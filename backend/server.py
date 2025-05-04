@@ -710,7 +710,7 @@ async def startup_db_client():
     try:
         result = supabase.table('interest_categories').select('*').execute()
         if not result.data:
-        default_categories = [
+            default_categories = [
             {"id": str(uuid.uuid4()), "name": "Machine Learning", "description": "Machine learning algorithms and techniques"},
             {"id": str(uuid.uuid4()), "name": "AI Research", "description": "Academic research in artificial intelligence"},
             {"id": str(uuid.uuid4()), "name": "AI in Healthcare", "description": "Applications of AI in medical and healthcare fields"},
