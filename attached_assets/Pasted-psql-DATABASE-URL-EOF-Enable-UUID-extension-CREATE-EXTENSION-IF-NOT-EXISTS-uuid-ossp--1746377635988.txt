@@ -1,0 +1,63 @@
+psql "$DATABASE_URL" << 'EOF'
+-- Enable UUID extension
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Users table
+CREATE TABLE users (
+    id                        UUID    PRIMARY KEY DEFAULT uuid_generate_v4(),
+    email                     VARCHAR(255) UNIQUE NOT NULL,
+    name                      VARCHAR(255),
+    hashed_password           VARCHAR(255) NOT NULL,
+    interests                 TEXT[] DEFAULT '{}',
+    knowledge_level           VARCHAR(50) DEFAULT 'Intermediate',
+    email_digests             BOOLEAN DEFAULT TRUE,
+    email_frequency           VARCHAR(50) DEFAULT 'Weekly',
+    slack_enabled             BOOLEAN DEFAULT FALSE,
+    slack_webhook             TEXT,
+    is_onboarding_complete    BOOLEAN DEFAULT FALSE,
+    created_at                TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Interest Categories table
+CREATE TABLE interest_categories (
+    id          UUID    PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name        VARCHAR(255) NOT NULL,
+    description TEXT
+);
+
+-- News Sources table
+CREATE TABLE news_sources (
+    id       UUID    PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name     VARCHAR(255) NOT NULL,
+    url      TEXT    NOT NULL,
+    rss_url  TEXT,
+    category VARCHAR(255),
+    enabled  BOOLEAN DEFAULT TRUE
+);
+
+-- Articles table
+CREATE TABLE articles (
+    id             UUID    PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title          TEXT    NOT NULL,
+    url            TEXT    NOT NULL,
+    source_name    VARCHAR(255) NOT NULL,
+    source_id      UUID    REFERENCES news_sources(id),
+    published_date TIMESTAMPTZ,
+    categories     TEXT[]  DEFAULT '{}',
+    summary        TEXT,
+    content        TEXT,
+    image_url      TEXT,
+    is_trending    BOOLEAN DEFAULT FALSE,
+    created_at     TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+-- User Feedback table
+CREATE TABLE user_feedback (
+    id         UUID    PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id    UUID    REFERENCES users(id),
+    article_id UUID    REFERENCES articles(id),
+    feedback_type VARCHAR(50) NOT NULL,
+    comment    TEXT,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+EOF
