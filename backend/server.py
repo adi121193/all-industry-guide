@@ -711,9 +711,20 @@ async def startup_db_client():
         result = supabase.table('interest_categories').select('*').execute()
         if not result.data:
             default_categories = [
-            {"id": str(uuid.uuid4()), "name": "Machine Learning", "description": "Machine learning algorithms and techniques"},
-            {"id": str(uuid.uuid4()), "name": "AI Research", "description": "Academic research in artificial intelligence"},
-            {"id": str(uuid.uuid4()), "name": "AI in Healthcare", "description": "Applications of AI in medical and healthcare fields"},
+                {"id": str(uuid.uuid4()), "name": "Machine Learning", "description": "Machine learning algorithms and techniques"},
+                {"id": str(uuid.uuid4()), "name": "AI Research", "description": "Academic research in artificial intelligence"},
+                {"id": str(uuid.uuid4()), "name": "AI in Healthcare", "description": "Applications of AI in medical and healthcare fields"},
+                {"id": str(uuid.uuid4()), "name": "NLP", "description": "Natural Language Processing and large language models"},
+                {"id": str(uuid.uuid4()), "name": "Computer Vision", "description": "Image and video processing with AI"},
+                {"id": str(uuid.uuid4()), "name": "AI Ethics", "description": "Ethical considerations in AI development and deployment"},
+                {"id": str(uuid.uuid4()), "name": "AI Startups", "description": "News about AI startups and funding"},
+                {"id": str(uuid.uuid4()), "name": "AI Policy", "description": "Government policies and regulations related to AI"},
+                {"id": str(uuid.uuid4()), "name": "Robotics", "description": "AI in robotics and autonomous systems"}
+            ]
+            for category in default_categories:
+                supabase.table('interest_categories').insert(category).execute()
+    except Exception as e:
+        print(f"Error setting up interest categories: {str(e)}")
             {"id": str(uuid.uuid4()), "name": "NLP", "description": "Natural Language Processing and large language models"},
             {"id": str(uuid.uuid4()), "name": "Computer Vision", "description": "Image and video processing with AI"},
             {"id": str(uuid.uuid4()), "name": "AI Ethics", "description": "Ethical considerations in AI development and deployment"},
