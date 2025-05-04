@@ -253,13 +253,44 @@ async def parse_feed(feed_url: str, source_id: str, source_name: str) -> List[di
                     datetime(*published[:6])
                 ))
             
-            # Create a newspaper Article object to extract content
+            # Extract content using requests and BeautifulSoup
             try:
-                article = newspaper.Article(link)
-                article.download()
-                article.parse()
-                content = article.text
-                image_url = article.top_image if hasattr(article, 'top_image') else None
+                headers = {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                }
+                response = requests.get(link, headers=headers, timeout=10)
+                soup = BeautifulSoup(response.content, 'html.parser')
+                
+                # Remove script and style elements
+                for script in soup(["script", "style"]):
+                    script.extract()
+                
+                # Get text content
+                content = soup.get_text(separator='\n', strip=True)
+                
+                # Try to find a main image
+                image_url = None
+                img_tags = soup.find_all('img', class_=lambda c: c and ('hero' in c.lower() or 'featured' in c.lower() or 'main' in c.lower()))
+                if img_tags:
+                    for img in img_tags:
+                        if img.get('src'):
+                            image_url = img.get('src')
+                            break
+                
+                # If no specific image found, try to get the largest image
+                if not image_url:
+                    img_tags = soup.find_all('img')
+                    if img_tags:
+                        # Get the first decent sized image
+                        for img in img_tags:
+                            if img.get('src') and not img.get('src').endswith(('.ico', '.svg')):
+                                if img.get('width') and img.get('height'):
+                                    if int(img.get('width', 0)) > 200 and int(img.get('height', 0)) > 200:
+                                        image_url = img.get('src')
+                                        break
+                                else:
+                                    image_url = img.get('src')
+                                    break
             except Exception as e:
                 logging.warning(f"Error parsing article content: {str(e)}")
                 content = entry.get('summary', 'No content available')
