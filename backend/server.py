@@ -51,9 +51,18 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/users/login")
 
 # JWT settings
-SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "YOUR_SECRET_KEY_HERE")
+if not (SECRET_KEY := os.environ.get("JWT_SECRET_KEY")):
+    raise RuntimeError("JWT_SECRET_KEY environment variable must be set")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 1 week
+
+# Add rate limiting
+app.add_middleware(
+    SlowAPIMiddleware,
+    rate=20,
+    per=60,
+    store=SimpleMemoryStore()
+)
 
 # Initialize the scheduler
 scheduler = AsyncIOScheduler()

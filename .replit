@@ -7,3 +7,15 @@ packages = ["cargo", "libiconv", "libxcrypt", "libyaml", "openssl", "pkg-config"
 
 [deployment]
 run = ["sh", "-c", "uvicorn undefined:app --host 0.0.0.0 --port 3000"]
+
+[workflows]
+runButton = "Run Backend"
+
+[[workflows.workflow]]
+name = "Run Backend"
+author = 35807311
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "uvicorn backend.server:app --host 0.0.0.0 --port 5000 --reload"
