@@ -34,3 +34,9 @@ setuptools>=45
 wheel
 slowapi
 slowapi
+apscheduler
+beautifulsoup4
+feedparser
+google-generativeai
+motor
+slowapi
