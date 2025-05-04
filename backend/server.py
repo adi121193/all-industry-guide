@@ -725,15 +725,6 @@ async def startup_db_client():
                 supabase.table('interest_categories').insert(category).execute()
     except Exception as e:
         print(f"Error setting up interest categories: {str(e)}")
-            {"id": str(uuid.uuid4()), "name": "NLP", "description": "Natural Language Processing and large language models"},
-            {"id": str(uuid.uuid4()), "name": "Computer Vision", "description": "Image and video processing with AI"},
-            {"id": str(uuid.uuid4()), "name": "AI Ethics", "description": "Ethical considerations in AI development and deployment"},
-            {"id": str(uuid.uuid4()), "name": "AI Startups", "description": "News about AI startups and funding"},
-            {"id": str(uuid.uuid4()), "name": "AI Policy", "description": "Government policies and regulations related to AI"},
-            {"id": str(uuid.uuid4()), "name": "Robotics", "description": "AI in robotics and autonomous systems"}
-        ]
-        for category in default_categories:
-                supabase.table('interest_categories').insert(category).execute()
 
     # Set up default news sources if none exist
     result = supabase.table('news_sources').select('*').execute()
@@ -814,7 +805,7 @@ async def startup_db_client():
                 "published_date": datetime.utcnow() - timedelta(days=3),
                 "categories": ["AI in Healthcare", "Computer Vision"],
                 "summary": "Researchers have developed a new AI system that can detect early-stage cancer from medical imaging with higher accuracy than traditional methods, potentially saving thousands of lives through earlier intervention.",
-                "content": "A team of researchers from Stanford University and Memorial Sloan Kettering Cancer Center have announced a breakthrough in using artificial intelligence for cancer detection. Their system, which combines advanced computer vision techniques with large-scale medical imaging datasets, has demonstrated the ability to identify early-stage cancer with 94% accuracy, compared to 72% accuracy for traditional screening methods. The AI system was trained on over 1 million anonymized medical images and validated across multiple independent datasets. Particularly promising results were seen in detecting lung, breast, and colorectal cancers at stages where treatment is most effective. The researchers are now working with regulatory authorities to begin clinical trials, with hopes of bringing the technology to hospitals within two years. If successful, the system could significantly increase cancer survival rates through earlier detection and intervention.",
+                "content": "A team of researchers from Stanford University and Memorial Sloan Kettering Cancer Center have announced a breakthrough in using artificial intelligence for cancer detection. Their system, which combines advanced computer vision techniques with large-scale medical imaging datasets, has demonstrated the abilityto identify early-stage cancer with 94% accuracy, compared to 72% accuracy for traditional screening methods. The AI system was trained on over 1 million anonymized medical images and validated across multiple independent datasets. Particularly promising results were seen in detecting lung, breast, and colorectal cancers at stages where treatment is most effective. The researchers are now working with regulatory authorities to begin clinical trials, with hopes of bringing the technology to hospitals within two years. If successful, the system could significantly increase cancer survival rates through earlier detection and intervention.",
                 "image_url":"https://images.unsplash.com/photo-1576086213369-97a306d36557",
                 "is_trending": False,
                 "created_at": datetime.utcnow()
