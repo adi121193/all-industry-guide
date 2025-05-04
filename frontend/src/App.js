@@ -991,10 +991,20 @@ function FeedPage() {
     
     setQueryLoading(true);
     try {
-      const response = await axios.post(`${API}/articles/ask`, {
-        query: query,
-        article_id: activeArticle.id
-      });
+      // If the article has content, use article_id; otherwise provide the content directly
+      const payload = {
+        query: query
+      };
+      
+      if (activeArticle.id) {
+        payload.article_id = activeArticle.id;
+      } else if (activeArticle.content) {
+        payload.context = activeArticle.content;
+      } else if (activeArticle.summary) {
+        payload.context = activeArticle.summary;
+      }
+      
+      const response = await axios.post(`${API}/articles/ask`, payload);
       
       setQueryAnswer(response.data.answer);
     } catch (err) {
