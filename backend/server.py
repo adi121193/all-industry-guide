@@ -733,6 +733,11 @@ async def shutdown_db_client():
 async def root():
     return {"message": "Welcome to the AI Industry Navigator API"}
 
+# API root endpoint
+@app.get("/api")
+async def api_root():
+    return {"message": "AI Industry Navigator API", "version": "1.0.0"}
+
 # Include the router in the main app
 app.include_router(api_router)
 
