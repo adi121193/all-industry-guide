@@ -1195,13 +1195,28 @@ function App() {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/onboarding" element={
-                <ProtectedRoute>
+                <ProtectedRoute requireOnboarding={false}>
                   <OnboardingPage />
                 </ProtectedRoute>
               } />
               <Route path="/feed" element={
                 <ProtectedRoute requireOnboarding={true}>
                   <FeedPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/articles/:articleId" element={
+                <ProtectedRoute requireOnboarding={true}>
+                  <ArticleDetailPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/explore" element={
+                <ProtectedRoute requireOnboarding={true}>
+                  <ExplorePage />
+                </ProtectedRoute>
+              } />
+              <Route path="/profile" element={
+                <ProtectedRoute requireOnboarding={true}>
+                  <ProfilePage />
                 </ProtectedRoute>
               } />
             </Routes>
