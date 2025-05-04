@@ -35,11 +35,16 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-# Supabase client
-supabase: Client = create_client(
-    os.environ.get('SUPABASE_URL', ''),
-    os.environ.get('SUPABASE_KEY', '')
-)
+# Supabase client (optional)
+supabase = None
+if os.environ.get('SUPABASE_URL') and os.environ.get('SUPABASE_KEY'):
+    try:
+        supabase = create_client(
+            os.environ.get('SUPABASE_URL', ''),
+            os.environ.get('SUPABASE_KEY', '')
+        )
+    except Exception as e:
+        logging.warning(f"Failed to initialize Supabase client: {str(e)}")
 
 # Create the main app without a prefix
 app = FastAPI(title="AI Industry Navigator API")
