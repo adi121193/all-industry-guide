@@ -624,6 +624,8 @@ function OnboardingPage() {
       if (user) {
         const updatedUser = { ...user, isNewUser: false };
         localStorage.setItem("user", JSON.stringify(updatedUser));
+        // Store knowledge level for use in explanations
+        localStorage.setItem("knowledgeLevel", knowledgeLevel);
         setUser(updatedUser);
       }
       
