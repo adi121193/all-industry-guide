@@ -1200,7 +1200,7 @@ function App() {
                 </ProtectedRoute>
               } />
               <Route path="/feed" element={
-                <ProtectedRoute>
+                <ProtectedRoute requireOnboarding={true}>
                   <FeedPage />
                 </ProtectedRoute>
               } />
