@@ -917,13 +917,32 @@ function FeedPage() {
   useEffect(() => {
     async function fetchFeed() {
       try {
+        // First try to get the personalized feed
         const response = await axios.get(`${API}/articles/feed`);
-        setArticles(response.data);
+        
+        if (response.data && response.data.length > 0) {
+          setArticles(response.data);
+        } else {
+          // If no personalized articles, fallback to getting general articles
+          console.log("No personalized articles found, falling back to general articles");
+          const generalResponse = await axios.get(`${API}/articles`);
+          setArticles(generalResponse.data);
+        }
         setLoading(false);
       } catch (err) {
         console.error("Error fetching feed:", err);
-        setError("Could not fetch your personalized feed. Please try again later.");
-        setLoading(false);
+        
+        // Fallback to general articles if personalized feed fails
+        try {
+          console.log("Trying to fetch general articles as fallback");
+          const fallbackResponse = await axios.get(`${API}/articles`);
+          setArticles(fallbackResponse.data);
+          setLoading(false);
+        } catch (fallbackErr) {
+          console.error("Error fetching fallback articles:", fallbackErr);
+          setError("Could not fetch articles. Please try again later.");
+          setLoading(false);
+        }
       }
     }
     
