@@ -352,7 +352,8 @@ async def register_user(user_create: UserCreate):
     
     user_dict = new_user.dict()
     user_dict["hashed_password"] = hashed_password
-    del user_dict["password"] if "password" in user_dict else None
+    if "password" in user_dict:
+        del user_dict["password"]
     
     # Insert to database
     await db.users.insert_one(user_dict)
