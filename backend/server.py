@@ -35,27 +35,21 @@ ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
 # Initialize Supabase client
-if not (supabase_url := os.environ.get('SUPABASE_URL')):
-    raise RuntimeError("SUPABASE_URL environment variable must be set")
-if not (supabase_key := os.environ.get('SUPABASE_KEY')):
-    raise RuntimeError("SUPABASE_KEY environment variable must be set")
+supabase_url = os.environ.get('SUPABASE_URL')
+supabase_key = os.environ.get('SUPABASE_KEY')
+
+if not supabase_url or not supabase_key:
+    raise RuntimeError("SUPABASE_URL and SUPABASE_KEY environment variables must be set")
 
 try:
-    supabase = create_client(supabase_url, supabase_key)
+    # For direct database access, we'll use the connection string as service_key
+    supabase = create_client(
+        supabase_url,
+        supabase_key.split('@')[0].split(':')[-1]  # Extract the password from connection string
+    )
 except Exception as e:
     print(f"Failed to initialize Supabase client: {e}")
     raise
-
-# Supabase client (optional)
-supabase = None
-if os.environ.get('SUPABASE_URL') and os.environ.get('SUPABASE_KEY'):
-    try:
-        supabase = create_client(
-            os.environ.get('SUPABASE_URL', ''),
-            os.environ.get('SUPABASE_KEY', '')
-        )
-    except Exception as e:
-        logging.warning(f"Failed to initialize Supabase client: {str(e)}")
 
 # Create the main app without a prefix
 app = FastAPI(title="AI Industry Navigator API")
