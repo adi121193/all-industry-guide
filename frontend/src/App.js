@@ -75,11 +75,11 @@ function AuthProvider({ children }) {
       
       // Store token and user info
       localStorage.setItem("token", access_token);
-      const userData = { id: user_id, email, name };
+      const userData = { id: user_id, email, name, isNewUser: true };
       localStorage.setItem("user", JSON.stringify(userData));
       
       // Set user in state
-      setUser(userData);
+      setUser({...userData, isNewUser: true});
       
       return { success: true };
     } catch (error) {
