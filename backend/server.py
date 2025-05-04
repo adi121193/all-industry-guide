@@ -42,11 +42,13 @@ if not supabase_url or not supabase_key:
     raise RuntimeError("SUPABASE_URL and SUPABASE_KEY environment variables must be set")
 
 try:
-    # For direct database access, we'll use the connection string as service_key
-    supabase = create_client(
-        supabase_url,
-        supabase_key.split('@')[0].split(':')[-1]  # Extract the password from connection string
-    )
+    # Use the connection URL parts to get service role key
+    connection_parts = supabase_key.split(':')
+    if len(connection_parts) > 1:
+        service_role_key = connection_parts[1].split('@')[0]
+        supabase = create_client(supabase_url, service_role_key)
+    else:
+        supabase = create_client(supabase_url, supabase_key)
 except Exception as e:
     print(f"Failed to initialize Supabase client: {e}")
     raise
