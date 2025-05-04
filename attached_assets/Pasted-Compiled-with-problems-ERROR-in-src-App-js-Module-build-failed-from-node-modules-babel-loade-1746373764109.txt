@@ -1,0 +1,53 @@
+Compiled with problems:
+×
+ERROR in ./src/App.js
+Module build failed (from ./node_modules/babel-loader/lib/index.js):
+SyntaxError: /home/runner/workspace/frontend/src/App.js: Identifier 'ArticleDetailPage' has already been declared. (1229:9)
+
+  1227 | }
+  1228 |
+> 1229 | function ArticleDetailPage() {
+       |          ^
+  1230 |   return (
+  1231 |     <div className="min-h-screen bg-gray-50 py-8">
+  1232 |       <div className="max-w-3xl mx-auto px-4">
+    at constructor (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:1:19082)
+    at FlowParserMixin.raise (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:1:178064)
+    at FlowScopeHandler.checkRedeclarationInScope (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:1:56980)
+    at FlowScopeHandler.declareName (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:1:56132)
+    at FlowScopeHandler.declareName (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:1:58321)
+    at FlowParserMixin.registerFunctionStatementId (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:1:361929)
+    at FlowParserMixin.parseFunction (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:1:361441)
+    at FlowParserMixin.parseFunctionStatement (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:1:352496)
+    at FlowParserMixin.parseStatementContent (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:1:343855)
+    at FlowParserMixin.parseStatementLike (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:1:343103)
+    at FlowParserMixin.parseStatementLike (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:1:93846)
+    at FlowParserMixin.parseModuleItem (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:1:342582)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:1:357657)
+    at FlowParserMixin.parseBlockBody (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:1:357337)
+    at FlowParserMixin.parseProgram (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:1:339720)
+    at FlowParserMixin.parseTopLevel (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:1:339383)
+    at FlowParserMixin.parseTopLevel (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:1:116191)
+    at FlowParserMixin.parse (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:1:390221)
+    at parse (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:1:390969)
+    at parser (/home/runner/workspace/frontend/node_modules/@babel/core/lib/parser/index.js:41:34)
+    at parser.next (<anonymous>)
+    at normalizeFile (/home/runner/workspace/frontend/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+    at normalizeFile.next (<anonymous>)
+    at run (/home/runner/workspace/frontend/node_modules/@babel/core/lib/transformation/index.js:22:50)
+    at run.next (<anonymous>)
+    at transform (/home/runner/workspace/frontend/node_modules/@babel/core/lib/transform.js:22:33)
+    at transform.next (<anonymous>)
+    at step (/home/runner/workspace/frontend/node_modules/gensync/index.js:261:32)
+    at /home/runner/workspace/frontend/node_modules/gensync/index.js:273:13
+    at async.call.result.err.err (/home/runner/workspace/frontend/node_modules/gensync/index.js:223:11)
+    at /home/runner/workspace/frontend/node_modules/gensync/index.js:189:28
+    at /home/runner/workspace/frontend/node_modules/@babel/core/lib/gensync-utils/async.js:67:7
+    at /home/runner/workspace/frontend/node_modules/gensync/index.js:113:33
+    at step (/home/runner/workspace/frontend/node_modules/gensync/index.js:287:14)
+    at /home/runner/workspace/frontend/node_modules/gensync/index.js:273:13
+    at async.call.result.err.err (/home/runner/workspace/frontend/node_modules/gensync/index.js:223:11)
+ERROR
+[eslint] 
+src/App.js
+  Line 1229:9:  Parsing error: Identifier 'ArticleDetailPage' has already been declared. (1229:9)
